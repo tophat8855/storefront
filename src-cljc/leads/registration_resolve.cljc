@@ -22,7 +22,7 @@
                         :alt "Congrats. Welcome to the Mayvenn community! Your website is ready to go. You can share your store link, shop, and start selling now."}]]])
 
 (defn- first-coupon-link [store-link token user-id]
-  (str "//" store-link "?sha=FIRST&one-time-auth=" token "&user-id=" user-id))
+  (str "//" store-link "/one-time-login?sha=FIRST&token=" token "&user-id=" user-id))
 
 (defn coupon-section [store-link token user-id]
   [:section.center.white.bg-cover.bg-center.bg-30-off.center.px3.py6
@@ -78,7 +78,7 @@
       [:p.mb3 "Our stylist kit is full of essential selling tools like business cards, hair samples, and more. "
        "For just $109, this is the best way to jumpstart your Mayvenn business (a $200 value)."]]
      [:a.h5.block.col-12.col-6-on-tb.col-4-on-dt.mx-auto.regular.btn.btn-primary.white
-      {:href   (str "//" store-link "/categories/hair/stylist-products?one-time-auth=" token "&user-id=" user-id)
+      {:href   (str "//" store-link "/products/49-rings-kit?one-time-auth=" token "&user-id=" user-id)
        :target "_blank"}
       "Learn more about stylist kits"]]]])
 
