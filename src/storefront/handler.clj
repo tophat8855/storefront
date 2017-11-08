@@ -353,18 +353,16 @@
         (update-in keypaths/sku-sets merge (index-by :catalog/product-id sku-sets))
         (update-in keypaths/skus merge (products/normalize-skus skus)))))
 
-(defn required-data [dyed-hair-experiment? {:keys [environment leads-config storeback-config nav-event nav-message store order-number order-token]}]
+(defn required-data [{:keys [environment leads-config storeback-config nav-event nav-message store order-number order-token]}]
   (-> {}
       (assoc-in keypaths/welcome-url
                 (str (:endpoint leads-config) "?utm_source=shop&utm_medium=referral&utm_campaign=ShoptoWelcome"))
       (assoc-in keypaths/store store)
       (assoc-in keypaths/environment environment)
-      (experiments/determine-features dyed-hair-experiment?)
+      (experiments/determine-features)
       (assoc-in keypaths/named-searches (api/named-searches storeback-config))
       (assoc-in keypaths/order (api/get-order storeback-config order-number order-token))
-      (assoc-in keypaths/categories (if dyed-hair-experiment?
-                                      categories/initial-categories
-                                      categories/old-initial-categories))
+      (assoc-in keypaths/categories categories/initial-categories)
       (assoc-in keypaths/static (static-page nav-event))
       (assoc-in keypaths/navigation-message nav-message)))
 
@@ -383,9 +381,7 @@
                                      (string/replace #" " "+"))]
       (when (not= nav-event events/navigate-not-found)
         (let [render-ctx            (auto-map storeback-config environment client-version)
-              dyed-hair-experiment? (= (cookies/get req "experiments.dyed-hair") "true")
-              data                  (required-data dyed-hair-experiment?
-                                                   (auto-map environment
+              data                  (required-data (auto-map environment
                                                              leads-config
                                                              storeback-config
                                                              nav-event
