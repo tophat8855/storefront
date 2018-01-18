@@ -9,11 +9,12 @@
             [storefront.events :as events]
             [storefront.keypaths :as keypaths]))
 
-(defn component [{:keys [nav-event stats earnings bonuses referrals]} owner opts]
+(defn component [{:keys [nav-event stats payout-method earnings bonuses referrals]} owner opts]
   (om/component
    (html
     [:.container
-     (om/build stylist-dashboard-stats-component {:stats stats})
+     (om/build stylist-dashboard-stats-component {:stats         stats
+                                                  :payout-method payout-method})
 
      [:div.bg-light-gray
       [:div.col-6-on-tb-dt.mx-auto
@@ -34,11 +35,12 @@
        (om/build referrals/component referrals))])))
 
 (defn query [data]
-  {:nav-event (get-in data keypaths/navigation-event)
-   :stats     (get-in data keypaths/stylist-stats)
-   :earnings  (earnings/query data)
-   :bonuses   (bonuses/query data)
-   :referrals (referrals/query data)})
+  {:nav-event     (get-in data keypaths/navigation-event)
+   :stats         (get-in data keypaths/stylist-stats)
+   :payout-method (get-in data (conj keypaths/stylist-manage-account :original_payout_method))
+   :earnings      (earnings/query data)
+   :bonuses       (bonuses/query data)
+   :referrals     (referrals/query data)})
 
 (defn built-component [data opts]
   (om/build component (query data) opts))
