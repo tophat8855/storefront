@@ -1,4 +1,4 @@
-(ns storefront.components.stylist.cash-out
+(ns storefront.components.stylist.cash-out-now
   (:require [storefront.component :as component]
             [storefront.components.ui :as ui]
             [storefront.components.money-formatters :as mf]))

@@ -18,7 +18,7 @@
                        [storefront.components.stylist.share-your-store :as stylist.share-your-store]
                        [storefront.components.stylist.account :as stylist.account]
                        [storefront.components.stylist.portrait :as stylist.portrait]
-                       [storefront.components.stylist.cash-out :as stylist.cash-out]
+                       [storefront.components.stylist.cash-out-now :as stylist.cash-out-now]
                        [storefront.components.stylist.gallery-image-picker :as gallery-image-picker]
                        [storefront.components.friend-referrals :as friend-referrals]
                        [storefront.components.style-guide :as style-guide]
@@ -57,7 +57,7 @@
          events/navigate-shop-bundle-deals                    shop-bundle-deals/built-component
          events/navigate-shop-by-look                         shop-by-look/built-component
          events/navigate-shop-by-look-details                 shop-by-look-details/built-component
-         events/navigate-stylist-dashboard-cash-out           stylist.cash-out/built-component
+         events/navigate-stylist-dashboard-cash-out-now       stylist.cash-out-now/built-component
          events/navigate-stylist-dashboard-earnings           stylist.dashboard/built-component
          events/navigate-stylist-dashboard-bonus-credit       stylist.dashboard/built-component
          events/navigate-stylist-dashboard-referrals          stylist.dashboard/built-component
