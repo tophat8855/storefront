@@ -23,28 +23,36 @@
            [:div.h7 "Linked Card XXXX-XXXX-XXXX-" last4]
            [:div.h7 "PayPal Email: " email])]
         [:h2.teal (mf/as-money amount)]]
-       [:div.navy.center.h7
-        (case payout-timeframe
-          "immediate"                 "Instant: Funds typically arrive in minutes"
-          "next_business_day"         "Funds paid out to this card will become available the next business day."
-          "two_to_five_business_days" "Funds paid out to this card will become available two to five business days later."
-          "") ]
-       [:div.my3
-        {:data-test "cash-out-button"
-         :data-ref "cash-out-button"}
-        (ui/teal-button (utils/route-to events/navigate-cart) "Cash out")]
-       [:div.h7.mt3.dark-gray "Transfers may take up to 30 minutes and vary by bank."]]))))
+       (if cash-out-pending?
+         [:div.my2.h2 ui/spinner]
+
+         [:div
+          [:div.navy.center.h7
+           (case payout-timeframe
+             "immediate"                 "Instant: Funds typically arrive in minutes"
+             "next_business_day"         "Funds paid out to this card will become available the next business day."
+             "two_to_five_business_days" "Funds paid out to this card will become available two to five business days later."
+             "") ]
+          [:div.my3
+           {:data-test "cash-out-button"
+            :data-ref "cash-out-button"}
+           (ui/teal-button (utils/route-to ) "Cash out")]
+          [:div.h7.mt3.dark-gray "Transfers may take up to 30 minutes and vary by bank."]])]))))
 
 (defn query [data]
   (let [{:keys [amount payout-method]} (get-in data keypaths/stylist-next-payout)]
-    {:amount        amount
-     :payout-method payout-method}))
+    {:amount            amount
+     :payout-method     payout-method
+     :cash-out-pending? (utils/requesting? data request-keys/cash-out)}))
 
 (defn built-component [data opts]
   (om/build component (query data) opts))
 
 (defmethod effects/perform-effects events/navigate-stylist-dashboard-cash-out-now [_ _ _ _ app-state]
   (api/get-stylist-next-payout (get-in app-state keypaths/user-id) (get-in app-state keypaths/user-token)))
+
+(defmethod effects/perform-effects events/cash-out [_ _ _ _ app-state]
+  (api/cash-out))
 
 (defmethod transitions/transition-state events/api-success-stylist-next-payout
   [_ _ {:keys [amount payout-method]} app-state]

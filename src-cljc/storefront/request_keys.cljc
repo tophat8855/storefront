@@ -33,6 +33,7 @@
 (def get-stylist-earnings [:get-stylist-earnings])
 (def get-stylist-balance-transfers [:get-stylist-balance-tranfers])
 (def get-stylist-next-payout [:get-stylist-next-payout])
+(def cash-out [:cash-out])
 (def get-stylist-commission [:get-stylist-commission])
 (def get-stylist-bonus-credits [:get-stylist-bonus-credits])
 (def get-stylist-referral-program [:get-stylist-referral-program])

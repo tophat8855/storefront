@@ -560,6 +560,14 @@
     :handler #(messages/handle-message events/api-success-stylist-next-payout
                                        (select-keys % [:amount :payout-method]))}))
 
+(defn cash-out
+  [user-id user-token]
+  (api-req
+   POST
+   ""
+   request-keys/cash-out
+   {}))
+
 (defn get-stylist-commission [user-id user-token {:keys [commission-id]}]
   (api-req
    GET
