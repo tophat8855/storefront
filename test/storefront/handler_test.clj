@@ -317,7 +317,14 @@
         (is (some #{"utm_medium=;Max-Age=0;Secure;Path=/"} cookies))
         (is (some #{"utm_campaign=;Max-Age=0;Secure;Path=/"} cookies))
         (is (some #{"utm_content=;Max-Age=0;Secure;Path=/"} cookies))
-        (is (some #{"utm_term=;Max-Age=0;Secure;Path=/"} cookies))))))
+        (is (some #{"utm_term=;Max-Age=0;Secure;Path=/"} cookies))))
+    (testing "has no canonical url"
+      (let [resp (handler (-> (mock/request :get "https://welcome.mayvenn.com/stylists/welcome")))]
+        (is (= 200 (:status resp)))
+        (is (-> resp
+                :body
+                (.contains "rel=\"canonical\"")
+                not))))))
 
 (defmacro is-redirected-to [resp domain path]
   `(let [resp# ~resp
@@ -609,7 +616,9 @@
       (with-standalone-server [storeback (standalone-server storeback-handler)]
         (with-handler handler
           (let [resp (handler (mock/request :get "https://bob.mayvenn.com/products/67-peruvian-water-wave-lace-closures"))]
-            (is (= 200 (:status resp)))))))))
+            (is (= 200 (:status resp)))
+            (testing "includes canonical links to corresponding shop.mayvenn page"
+              (is (re-matches #"<link[^>]+canonical[^>]+shop\.mayvenn\.com\/products\/67-peruvian-water-wave-lace-closures" (:body resp))))))))))
 
 (deftest server-side-fetching-of-orders
   (testing "storefront retrieves an order from storeback"
@@ -661,7 +670,7 @@
         (let [resp (handler (mock/request :get "https://welcome.mayvenn.com/sitemap.xml"))]
           (is (= 404 (:status resp))))))))
 
-(deftest robots-disllows-content-storefront-pages-on-shop
+(deftest robots-disallows-content-storefront-pages-on-shop
   (with-handler handler
     (let [{:keys [status body]} (handler (mock/request :get "https://shop.mayvenn.com/robots.txt"))]
       (is (= 200 status))
@@ -676,11 +685,12 @@
         "Disallow: /admin"
         "Disallow: /content"))))
 
-(deftest robots-disallows-all-pages-on-stylist-stores
+(deftest robots-allows-catalog-pages-on-stylist-stores
   (with-handler handler
     (let [{:keys [status body]} (handler (mock/request :get "https://bob.mayvenn.com/robots.txt"))]
       (is (= 200 status))
-      (is (some #{"Disallow: /"} (seq (.split body "\n")))))))
+      (prn body)
+      (is (not (.contains body "User-agent: googlebot\nDisallow: /\n"))))))
 
 (deftest robots-disallows-leads-pages-on-welcome-subdomain
   (with-handler handler

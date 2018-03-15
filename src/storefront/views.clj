@@ -64,35 +64,42 @@
           (prefetch-image "spinner" "/images/spinner.svg")
           (prefetch-image "large_spinner" "/images/large-spinner.svg")))
 
-(defn layout [{:keys [storeback-config environment client-version]} data initial-content]
-  (html5 {:lang "en"}
-   [:head
-    [:meta {:name "fragment" :content "!"}]
-    [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"}]
-    [:meta {:http-equiv "Content-type" :content "text/html;charset=UTF-8"}]
-    [:meta {:name "theme-color" :content "#ffffff"}]
-    (into '() (seo/tags-for-page data))
+(defn canonicalize-stylist-url [url]
+  (string/replace url #":\/\/\w+\." "://shop."))
 
-    [:link {:href (assets/path "/images/favicon.png") :rel "shortcut icon" :type "image/vnd.microsoft.icon"}]
-    (when asset-mappings/cdn-host
-      [:link {:rel "dns-prefetch" :href (str "//" asset-mappings/cdn-host)}])
-    [:link {:rel "dns-prefetch" :href (:endpoint storeback-config)}]
-    [:link {:rel "dns-prefetch" :href "//www.sendsonar.com"}]
-    [:link {:rel "dns-prefetch" :href "//ucarecdn.com"}]
-    [:script {:type "text/javascript"} (raw prefetch-script)]
-    [:script {:type "text/javascript"}
-     (raw (str "var assetManifest=" (generate-string asset-mappings/image-manifest) ";"
-               "var cdnHost=" (generate-string asset-mappings/cdn-host) ";"
-               ;; need to make sure the edn which has double quotes is validly escaped as
-               ;; json as it goes into the JS file
-               "var data = " (-> (sanitize data)
-                                 (assoc-in keypaths/static (get-in data keypaths/static))
-                                 pr-str
-                                 generate-string) ";"
-               "var environment=\"" environment "\";"
-               "var clientVersion=\"" client-version "\";"
-               "var apiUrl=\"" (:endpoint storeback-config) "\";"
-               "if (window.FontFace) {
+(defn layout [{:keys [storeback-config environment client-version] :as ctx} data initial-content]
+  (let [stylist-shop? (not (#{"shop" "welcome"} (-> data :store :store-slug)))]
+    (html5 {:lang "en"}
+           [:head
+            #_[:meta {:name "debug" :content (keys ctx)}]
+            [:meta {:name "fragment" :content "!"}]
+            [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"}]
+            [:meta {:http-equiv "Content-type" :content "text/html;charset=UTF-8"}]
+            [:meta {:name "theme-color" :content "#ffffff"}]
+            (into '() (seo/tags-for-page data))
+
+            [:link {:href (assets/path "/images/favicon.png") :rel "shortcut icon" :type "image/vnd.microsoft.icon"}]
+            (when asset-mappings/cdn-host
+              [:link {:rel "dns-prefetch" :href (str "//" asset-mappings/cdn-host)}])
+            [:link {:rel "dns-prefetch" :href (:endpoint storeback-config)}]
+            [:link {:rel "dns-prefetch" :href "//www.sendsonar.com"}]
+            [:link {:rel "dns-prefetch" :href "//ucarecdn.com"}]
+            #_(when stylist-shop?
+              [:link {:rel "canonical" :href (canonicalize-stylist-url )}])
+            [:script {:type "text/javascript"} (raw prefetch-script)]
+            [:script {:type "text/javascript"}
+             (raw (str "var assetManifest=" (generate-string asset-mappings/image-manifest) ";"
+                       "var cdnHost=" (generate-string asset-mappings/cdn-host) ";"
+                       ;; need to make sure the edn which has double quotes is validly escaped as
+                       ;; json as it goes into the JS file
+                       "var data = " (-> (sanitize data)
+                                         (assoc-in keypaths/static (get-in data keypaths/static))
+                                         pr-str
+                                         generate-string) ";"
+                       "var environment=\"" environment "\";"
+                       "var clientVersion=\"" client-version "\";"
+                       "var apiUrl=\"" (:endpoint storeback-config) "\";"
+                       "if (window.FontFace) {
                     robotoLight = new FontFace('Roboto',
                                                \"" (assets/css-url (assets/path "/fonts/Roboto-Light-webfont.woff")) " format('woff')\",
                                                {style: 'normal', weight: 300, stretch: 'normal'});
