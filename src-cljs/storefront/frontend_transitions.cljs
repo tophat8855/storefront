@@ -447,11 +447,22 @@
       (assoc-in keypaths/popup :refer-stylist)
       clear-flash))
 
+(defn generate-password-validation-errors [user stylist password]
+  (cond-> {}
+    (> 6 (count password))
+    (merge (group-by :path [{:path ["user" "password"] :long-message "New password must be at least 6 characters"}]))
+
+    (let [user-id (:id user)
+          stylist-user-id (-> stylist :user :id)
+          stylist-last-name (-> stylist :address :last-name)]
+      ()) ;;; TODO
+    (merge (group-by :path [{:path ["user" "password"] :long-message "New password must not be your last name"}]))))
+
 (defmethod transition-state events/control-account-profile-submit [_ event args app-state]
-  (let [password              (get-in app-state keypaths/manage-account-password)
-        field-errors          (cond-> {}
-                                (> 6 (count password))
-                                (merge (group-by :path [{:path ["password"] :long-message "New password must be at least 6 characters"}])))]
+  (let [stylist-account (get-in app-state keypaths/stylist-manage-account)
+        password        (-> stylist-account :user :password)
+        user            (get-in app-state keypaths/user)
+        field-errors    (generate-password-validation-errors user stylist-account password)]
     (if (and (seq password) (seq field-errors))
       (assoc-in app-state keypaths/errors {:field-errors field-errors :error-code "invalid-input" :error-message "Oops! Please fix the errors below."})
       (clear-field-errors app-state))))
@@ -464,11 +475,10 @@
       (assoc-in (conj keypaths/stylist-manage-account :green-dot-payout-attributes) {:last4 last4}))))
 
 (defmethod transition-state events/control-stylist-account-password-submit [_ event args app-state]
-  (let [stylist-account       (get-in app-state keypaths/stylist-manage-account)
-        password              (-> stylist-account :user :password)
-        field-errors          (cond-> {}
-                                (> 6 (count password))
-                                (merge (group-by :path [{:path ["user" "password"] :long-message "New password must be at least 6 characters"}])))]
+  (let [stylist-account (get-in app-state keypaths/stylist-manage-account)
+        password        (-> stylist-account :user :password)
+        user            (get-in app-state keypaths/user)
+        field-errors    (generate-password-validation-errors user stylist-account password)]
     (if (seq field-errors)
       (assoc-in app-state keypaths/errors {:field-errors field-errors :error-code "invalid-input" :error-message "Oops! Please fix the errors below."})
       (clear-field-errors app-state))))
