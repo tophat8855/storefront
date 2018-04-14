@@ -10,6 +10,7 @@
             [storefront.assets :as assets]
             [storefront.config :as config]
             [storefront.accessors.experiments :as experiments]
+            [storefront.routes :as routes]
             [clojure.string :as string]
             [spice.date :as date]))
 
@@ -78,22 +79,41 @@
    ;; Mobile
    [:img.block.col-12 {:src (str mobile-url "-/format/auto/" file-name)
                        :alt alt}]])
-
 (def hero
   [:h1.h2
    [:a
     (assoc (utils/route-to events/navigate-shop-by-look {:album-slug "look"})
            :data-test "home-banner")
-    (let [file-name "Spring-Stock-up-extended.jpg"
-          alt       "The Spring Stock-Up EXTENDED! 25% off everything! Shop now!"
-          mob-uuid  "62a53d3b-3a88-4f46-83b2-1982c9814725"
-          dsk-uuid  "c62421c7-4eaf-4ef3-a84f-b6194fa8fe71"]
+    (let [file-name "Hair-Always-On-Beat-Fling.jpg"
+          alt       "Hair always on beat! 25% off everything! Shop looks!"
+          mob-uuid  "567ec976-be95-416f-a8ca-e49b3aefad8a"
+          dsk-uuid  "eb9fb12d-cd4b-4348-bd49-dc529a93e3ef"]
       (hero-image {:mobile-url  (str "//ucarecdn.com/" mob-uuid "/")
                    :desktop-url (str "//ucarecdn.com/" dsk-uuid "/")
                    :file-name   file-name
                    :alt         alt}))]])
 
- (def free-installation-hero
+(defn cms-hero [{:keys [hero] :as homepage-data}]
+  (when (seq homepage-data)
+    (let [{:keys [mobile desktop alt path]} hero
+          mobile-url                        (-> mobile :file :url)
+          desktop-url                       (-> desktop :file :url)]
+      [:h1.h2
+       [:a (assoc (apply utils/route-to (routes/navigation-message-for path))
+                  :data-test "home-banner")
+        [:picture
+         ;; Tablet/Desktop
+         (for [img-type ["webp" "jpg"]]
+           [(ui/source desktop-url
+                       {:media   "(min-width: 750px)"
+                        :src-set {"1x" {}}
+                        :type    img-type})
+            (ui/source mobile-url
+                       {:src-set {"1x" {}}
+                        :type    img-type})])
+         [:img.block.col-12 {:src mobile-url :alt alt}]]]])))
+
+(def free-installation-hero
   [:h1.h2
    [:a
     (assoc (utils/route-to events/navigate-shop-by-look {:album-slug "look"
@@ -149,6 +169,50 @@
                              :desktop-url "//ucarecdn.com/766bf2c0-63d1-4aec-840f-f993928ae20e/"
                              :file-name   "clip-ins-9-colors-2-textures.png"
                              :alt         "Clip-ins available in 9 colors, 2 textures!"})]]]))
+
+(defn cms-feature-block [{:keys [desktop mobile alt path]}]
+  ;; Assumptions: 2 up, within a .container. Does not account for 1px border.
+  ;;          Large End
+  ;; Desktop  480px
+  ;; Tablet   360px
+  ;; Mobile   375px
+  ;;
+  (let [mobile-url  (-> mobile :file :url)
+        desktop-url (-> desktop :file :url)
+        tablet-url  (-> desktop :file :url)]
+    [:div.col.col-12.col-4-on-tb-dt.border.border-white
+     [:a (apply utils/route-to (routes/navigation-message-for path))
+      [:picture
+       (for [img-type ["webp" "jpg"]]
+         [(ui/source desktop-url
+                  {:media   "(min-width: 1000px)"
+                   :type    img-type
+                   :src-set {"1x" {:w "480"}
+                             "2x" {:w "960"
+                                   :q "50"}}})
+          (ui/source tablet-url
+                  {:media   "(min-width: 750px)"
+                   :type    img-type
+                   :src-set {"1x" {:w "360"}
+                             "2x" {:w "720"
+                                   :q "50"}}})
+          (ui/source mobile-url
+                  {:type    img-type
+                   :src-set {"1x" {:w "375"}
+                             "2x" {:w "750"
+                                   :q "50"}}})])
+       ;; Fallback
+       [:img.block.col-12 {:src (str mobile-url "?w=375&fm=jpg")
+                           :alt alt}]]]]))
+
+(defn cms-feature-blocks
+  [{:as homepage-data :keys [feature-1 feature-2 feature-3]}]
+  (when (seq homepage-data)
+    [:div.container.border-top.border-white
+     [:div.col.col-12.my4 [:h1.center "Shop What's New"]]
+     (cms-feature-block feature-1)
+     (cms-feature-block feature-2)
+     (cms-feature-block feature-3)]))
 
 (defn drop-down-row [opts & content]
   (into [:a.inherit-color.block.center.h5.flex.items-center.justify-center
@@ -284,32 +348,38 @@
   (component/html
    [:a
     (utils/route-to events/navigate-friend-referrals {:query-params {:traffic_source "homepageBanner"}})
-    (hero-image {:mobile-url  "//ucarecdn.com/677f872a-d0eb-4c39-bffa-ffa02823143f/"
-                 :desktop-url "//ucarecdn.com/a3c29b65-feed-450f-bfa2-8a88a3b96cc8/"
-                 :file-name   "talkable_banner.jpg"
-                 :alt         "refer friends, earn rewards, get 20% off"})]))
+    (hero-image {:mobile-url  "//ucarecdn.com/762369fb-6680-4e0a-bf99-4e6317f03f1d/"
+                 :desktop-url "//ucarecdn.com/b11d90d3-ed57-4c18-a61b-d91b68e1cccb/"
+                 :file-name   "talkable_banner_25.jpg"
+                 :alt         "refer friends, earn rewards, get 25% off"})]))
 
-(defn component [{:keys [signed-in store categories hero-element]} owner opts]
+(defn component [{:keys [signed-in store categories hero-element feature-elements]} owner opts]
   (component/create
    [:div.m-auto
     [:section hero-element]
     [:section.hide-on-tb-dt (store-info signed-in store)]
-    [:section (feature-blocks)]
+    [:section feature-elements]
     [:section (popular-grid categories)]
     [:section video-autoplay]
     [:section about-mayvenn]
     [:section talkable-banner]]))
 
 (defn query [data]
-  (let [the-ville? (experiments/the-ville? data)]
-    {:store        (marquee/query data)
-     :signed-in    (auth/signed-in data)
-     :categories   (->> (get-in data keypaths/categories)
-                        (filter :home/order)
-                        (sort-by :home/order))
-     :hero-element (if the-ville?
-                     free-installation-hero
-                     hero)}))
+  (let [the-ville?    (experiments/the-ville? data)
+        cms?          (experiments/cms? data)
+        homepage-data (get-in data keypaths/cms-homepage)]
+    {:store           (marquee/query data)
+     :signed-in       (auth/signed-in data)
+     :categories      (->> (get-in data keypaths/categories)
+                           (filter :home/order)
+                           (sort-by :home/order))
+     :hero-element    (cond
+                        the-ville? free-installation-hero
+                        cms?       (cms-hero homepage-data)
+                        :else      hero)
+     :feature-elements (if cms?
+                        (cms-feature-blocks homepage-data)
+                        (feature-blocks))}))
 
 (defn built-component [data opts]
   (component/build component (query data) opts))

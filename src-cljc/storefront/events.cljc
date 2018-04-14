@@ -308,7 +308,6 @@
 (defpath api-success-telligent-login)
 
 (defpath api-success-leads-lead-created)
-(defpath api-success-leads-lead-registered)
 
 (defpath api-success-leads-a1-lead-created)
 (defpath api-success-leads-a1-lead-registered)
@@ -365,6 +364,8 @@
 (defpath checkout-address)
 (defpath checkout-address-place-changed)
 (defpath checkout-address-component-mounted)
+
+(defpath contentful-api-success-fetch-homepage)
 
 (defpath pixlee-api-success-fetch-album)
 (defpath pixlee-api-success-fetch-image)
